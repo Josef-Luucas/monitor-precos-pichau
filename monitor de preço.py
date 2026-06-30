@@ -80,36 +80,57 @@ iniciar_banco()
 options = uc.ChromeOptions() 
 navegador = uc.Chrome(options=options , version_main = 148) #configurando o navegador para ser o chrome versão 148
 
-link = "https://www.pichau.com.br/hardware/placa-m-e?product_category=6460&marcas=121%2C34%2C35%2C36&socket=539&sort=price-asc"
-navegador.get(link)
+produts_para_monitorar = [
+    {"categoria": "Placa Mãe",
+        "preco_alvo": 500.00,
+        "link": "https://www.pichau.com.br/hardware/placa-m-e?product_category=6460&marcas=121%2C34%2C35%2C36&socket=539&sort=price-asc"
+},
+    {"categoria": "Processadores Am4",
+            "preco_alvo": 900.00,
+            "link": "https://www.pichau.com.br/hardware/processadores/amd?socket=539%2C6539&sort=price-asc"
+},
+    {"categoria": "Placas de Vídeos",
+                    "preco_alvo": 1800.00,
+                    "link": "https://www.pichau.com.br/hardware/placa-de-video?rgpu=611%2C6304%2C6336%2C6337%2C6343%2C6347%2C6362%2C6383%2C6402%2C6481%2C6592%2C6631%2C6632%2C6658%2C6707%2C674%2C7190%2C7191%2C7192%2C7208%2C7400%2C741%2C742%2C7431%2C7519%2C7522%2C7703%2C7704%2C7895%2C841%2C844&sort=price-asc"
+},
 
-time.sleep(random.uniform(3, 5)) 
-motherboard = navegador.find_elements(By.CLASS_NAME, "mui-12athy2-price_vista")
-#usando o for para percorrer a lista
-print(f"Foram encontrados {len(motherboard)} preços:")
-#usando o enumarete para ver qual foi cada produto
-for i, elemento in enumerate(motherboard):
-    try:
-        #chamando a nova função que isola a extração
-        url_produto, text_preco, preco_float = extrair_link_e_preco(elemento)
-        
-        if preco_float < 500.00:
+]
+for item in produts_para_monitorar:
+    categoria_atual = item["categoria"]
+    preco_limite = item["preco_alvo"]
+    link_atual = item["link"]
+    print(f"\n🌐 Acessando página: {categoria_atual}")
+    navegador.get(link_atual)
+
+    time.sleep(random.uniform(3, 5)) 
+    elemento_preco = navegador.find_elements(By.CLASS_NAME, "mui-12athy2-price_vista")
+    #usando o for para percorrer a lista
+    print(f"Foram encontrados {len(elemento_preco)} preços para {categoria_atual}")
+    #usando o enumarete para ver qual foi cada produto
+    for i, elemento in enumerate(elemento_preco):
+        try:
+            #chamando a nova função que isola a extração
+            url_produto, text_preco, preco_float = extrair_link_e_preco(elemento)
             
-            #validando com o banco de dados
-            if verificar_e_atualizar_preco(url_produto, preco_float):
-                print(f"Produto {i+1}: {text_preco} - Alteração detectada! Enviando...")
+            if preco_float < preco_limite:
                 
-                mensagem = f"🚀 **Alerta de Preço!**\n\n" \
-                           f"💰 Preço Atual: {text_preco}\n" \
-                           f"🔗 Link: {url_produto}"
-                
-                bot.send_message(chat_id, mensagem, parse_mode="Markdown")
-                time.sleep(1)
-            else:
-                print(f"Produto {i+1}: Sem alterações no preço (R$ {preco_float}).")
-                
-    except Exception as e:
-        print(f"Erro no produto {i+1}: {e}")
+                #validando com o banco de dados
+                if verificar_e_atualizar_preco(url_produto, preco_float):
+                    print(f"Produto {i+1} ({categoria_atual}) : {text_preco} - Alteração detectada! Enviando...")
+                    
+                    mensagem = f"🚀 **Alerta de {categoria_atual}!**\n\n" \
+                            f"💰 Preço Atual: {text_preco}\n" \
+                            f"🔗 Link: {url_produto}"
+                    
+                    bot.send_message(chat_id, mensagem, parse_mode="Markdown")
+                    time.sleep(1)
+                else:
+                    print(f"Produto {i+1}: Sem alterações no preço (R$ {preco_float}).")
+                    
+        except Exception as e:
+            print(f"Erro no produto {i+1}: {e}")
 
+    time.sleep(random.uniform(2,4))
+print("\nMonitoramento finalizado")
 time.sleep(6)
 navegador.quit()
