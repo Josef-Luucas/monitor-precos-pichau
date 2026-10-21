@@ -1,0 +1,4 @@
+.env
+precos.db
+__pycache__/
+.venv/
