@@ -69,3 +69,7 @@ Para interromper a execução do script com segurança a qualquer momento, press
 🎮 Comandos do Bot no Telegram
 
 /categorias ou /menu: Abre o menu interativo com botões para disparar buscas manuais por categoria a qualquer momento.
+
+👤 Autor
+
+Desenvolvido por Josef Lucas no âmbito de estudos em Ciência da Computação.
