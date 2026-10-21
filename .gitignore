@@ -2,3 +2,6 @@
 precos.db
 __pycache__/
 .venv/
+.vscode/
+*.db
+
